@@ -1,0 +1,93 @@
+id: template_chat_flow
+name: Template Chat Flow
+inputs:
+  chat_history:
+    type: list
+    is_chat_input: false
+    is_chat_history: true
+  question:
+    type: string
+    is_chat_input: true
+outputs:
+  answer:
+    type: string
+    reference: ${answer_postprocessing.output}
+    is_chat_output: true
+  welcome_answer:
+    type: string
+    reference: ${welcome_prompt.output}
+    is_chat_output: false
+nodes:
+- name: user_question_processing
+  type: llm
+  source:
+    type: code
+    path: chat.jinja2
+  inputs:
+    deployment_name: gpt-35-turbo
+    temperature: 0.7
+    top_p: 1
+    max_tokens: 200
+    response_format:
+      type: text
+    presence_penalty: 0
+    frequency_penalty: 0
+    chat_history: ${inputs.chat_history}
+    chat_input: ${inputs.question}
+  provider: AzureOpenAI
+  connection: Default_AzureOpenAI
+  api: chat
+  module: promptflow.tools.aoai
+  use_variants: false
+- name: sql_query_generation
+  type: llm
+  source:
+    type: code
+    path: sql_querry.jinja2
+  inputs:
+    deployment_name: gpt-35-turbo
+    temperature: 0.7
+    top_p: 1
+    max_tokens: 500
+    response_format:
+      type: text
+    presence_penalty: 0
+    frequency_penalty: 0
+    regenerated_input: ${user_question_processing.output}
+  provider: AzureOpenAI
+  connection: Default_AzureOpenAI
+  api: chat
+  module: promptflow.tools.aoai
+  use_variants: false
+- name: sql_query_handling
+  type: python
+  source:
+    type: code
+    path: sql_query_handling.py
+  inputs:
+    generated_sql: ${sql_query_generation.output}
+  use_variants: false
+- name: answer_postprocessing
+  type: llm
+  source:
+    type: code
+    path: answer_postprocessing.jinja2
+  inputs:
+    deployment_name: gpt-35-turbo
+    temperature: 0.7
+    top_p: 1
+    max_tokens: 500
+    response_format:
+      type: text
+    presence_penalty: 0
+    frequency_penalty: 0
+    selected_sql: ${sql_query_handling.output}
+    user_request: ${user_question_processing.output}
+  provider: AzureOpenAI
+  connection: Default_AzureOpenAI
+  api: chat
+  module: promptflow.tools.aoai
+  use_variants: false
+node_variants: {}
+environment:
+  python_requirements_txt: requirements.txt

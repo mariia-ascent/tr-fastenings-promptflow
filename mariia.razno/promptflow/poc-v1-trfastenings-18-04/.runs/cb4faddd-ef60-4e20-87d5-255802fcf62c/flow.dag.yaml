@@ -1,0 +1,188 @@
+id: template_chat_flow
+name: Template Chat Flow
+inputs:
+  chat_history:
+    type: list
+    is_chat_input: false
+    is_chat_history: true
+  question:
+    type: string
+    is_chat_input: true
+outputs:
+  answer:
+    type: string
+    reference: ${select_output.output}
+    is_chat_output: true
+nodes:
+- name: checking_history
+  type: python
+  source:
+    type: code
+    path: checking_history.py
+  inputs:
+    chat_input: ${inputs.question}
+  use_variants: false
+- name: user_request_rephrasing
+  type: llm
+  source:
+    type: code
+    path: chat.jinja2
+  inputs:
+    deployment_name: gpt-35-turbo
+    temperature: 0.7
+    top_p: 1
+    max_tokens: 200
+    response_format:
+      type: text
+    presence_penalty: 0
+    frequency_penalty: 0
+    chat_history: ${inputs.chat_history}
+    chat_input: ${inputs.question}
+  provider: AzureOpenAI
+  connection: Default_AzureOpenAI
+  api: chat
+  module: promptflow.tools.aoai
+  use_variants: false
+- name: table_existance
+  type: python
+  source:
+    type: code
+    path: table_existance.py
+  inputs:
+    chat_history: ${inputs.chat_history}
+  use_variants: false
+- name: sql_query1_generation
+  type: llm
+  source:
+    type: code
+    path: sql_query_generation.jinja2
+  inputs:
+    deployment_name: gpt-35-turbo
+    temperature: 0.7
+    top_p: 1
+    max_tokens: 500
+    response_format:
+      type: text
+    presence_penalty: 0
+    frequency_penalty: 0
+    regenerated_input: ${user_request_rephrasing.output}
+  provider: AzureOpenAI
+  connection: Default_AzureOpenAI
+  api: chat
+  module: promptflow.tools.aoai
+  activate:
+    when: ${table_existance.output}
+    is: 0
+  use_variants: false
+- name: sql_query2_generation
+  type: llm
+  source:
+    type: code
+    path: sql_query2_generation.jinja2
+  inputs:
+    deployment_name: gpt-35-turbo
+    temperature: 0.7
+    top_p: 1
+    max_tokens: 500
+    response_format:
+      type: text
+    presence_penalty: 0
+    frequency_penalty: 0
+    regenerated_input: ${user_request_rephrasing.output}
+  provider: AzureOpenAI
+  connection: Default_AzureOpenAI
+  api: chat
+  module: promptflow.tools.aoai
+  activate:
+    when: ${table_existance.output}
+    is: 1
+  use_variants: false
+- name: no_query_generation
+  type: python
+  source:
+    type: code
+    path: no_query_generation.py
+  inputs:
+    requirements: ${user_request_rephrasing.output}
+  activate:
+    when: ${table_existance.output}
+    is: 2
+  use_variants: false
+- name: sql_execution
+  type: python
+  source:
+    type: code
+    path: sql_execution.py
+  inputs:
+    grounding: ${no_query_generation.output}
+    query1: ${sql_query1_generation.output}
+    query2: ${sql_query2_generation.output}
+  use_variants: false
+- name: execution_results
+  type: python
+  source:
+    type: code
+    path: execution_results.py
+  inputs:
+    sql_dict: ${sql_execution.output}
+  use_variants: false
+- name: continue_search
+  type: llm
+  source:
+    type: code
+    path: continue_search.jinja2
+  inputs:
+    deployment_name: gpt-35-turbo-16k
+    temperature: 0.7
+    top_p: 1
+    max_tokens: 1000
+    response_format:
+      type: text
+    presence_penalty: 0
+    frequency_penalty: 0
+    sql_execution: ${sql_execution.output}
+    user_request: ${user_request_rephrasing.output}
+  provider: AzureOpenAI
+  connection: Default_AzureOpenAI
+  api: chat
+  module: promptflow.tools.aoai
+  activate:
+    when: ${execution_results.output}
+    is: 0
+  use_variants: false
+- name: data_grounding
+  type: llm
+  source:
+    type: code
+    path: choise.jinja2
+  inputs:
+    deployment_name: gpt-35-turbo-16k
+    temperature: 0.7
+    top_p: 1
+    max_tokens: 1000
+    response_format:
+      type: text
+    presence_penalty: 0
+    frequency_penalty: 0
+    selected_sql: ${sql_execution.output}
+    user_request: ${user_request_rephrasing.output}
+  provider: AzureOpenAI
+  connection: Default_AzureOpenAI
+  api: chat
+  module: promptflow.tools.aoai
+  activate:
+    when: ${execution_results.output}
+    is: 1
+  use_variants: false
+- name: select_output
+  type: python
+  source:
+    type: code
+    path: select_output.py
+  inputs:
+    input1: ${continue_search.output}
+    input2: ${data_grounding.output}
+  use_variants: false
+node_variants: {}
+environment:
+  python_requirements_txt: requirements.txt

@@ -1,0 +1,85 @@
+{
+  "orientation": "Vertical",
+  "nodeLayouts": {
+    "inputs": {
+      "x": 701,
+      "y": 62,
+      "index": -1
+    },
+    "outputs": {
+      "x": 767.5,
+      "y": 832,
+      "index": -1
+    },
+    "user_request_rephrasing": {
+      "x": 701,
+      "y": 172,
+      "height": 75,
+      "index": 0
+    },
+    "table_existance": {
+      "x": 351,
+      "y": 172,
+      "height": 75,
+      "index": 1
+    },
+    "sql_query1_generation": {
+      "x": 12,
+      "y": 282,
+      "height": 75,
+      "index": 2
+    },
+    "sql_query2_generation": {
+      "x": 712,
+      "y": 282,
+      "height": 75,
+      "index": 3
+    },
+    "no_sql_query_generation": {
+      "x": 362,
+      "y": 282,
+      "height": 75,
+      "index": 4
+    },
+    "sql_execution": {
+      "x": 318,
+      "y": 392,
+      "height": 75,
+      "index": 5
+    },
+    "execution_results": {
+      "x": 482,
+      "y": 502,
+      "height": 75,
+      "index": 6
+    },
+    "continue_search": {
+      "x": 898,
+      "y": 612,
+      "height": 75,
+      "index": 7
+    },
+    "data_grounding": {
+      "x": 373,
+      "y": 612,
+      "height": 75,
+      "index": 8
+    },
+    "select_output": {
+      "x": 767.5,
+      "y": 722,
+      "height": 75,
+      "index": 9
+    }
+  },
+  "viewport": {
+    "transformMatrix": [
+      0.6928059943235587,
+      0,
+      0,
+      0.6928059943235587,
+      -277.34483421873085,
+      172.44850312416986
+    ]
+  }
+}

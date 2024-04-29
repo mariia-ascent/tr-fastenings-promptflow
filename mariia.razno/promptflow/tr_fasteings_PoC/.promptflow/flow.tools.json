@@ -1,0 +1,109 @@
+{
+  "package": {},
+  "code": {
+    "chat.jinja2": {
+      "name": "chat.jinja2",
+      "type": "prompt",
+      "inputs": {
+        "chat_history": {
+          "type": [
+            "string"
+          ],
+          "allow_manual_entry": false,
+          "is_multi_select": false,
+          "input_type": "default",
+          "value": "${inputs.chat_history}",
+          "id": "o4sbc8n6"
+        },
+        "chat_input": {
+          "type": [
+            "string"
+          ],
+          "allow_manual_entry": false,
+          "is_multi_select": false,
+          "input_type": "default",
+          "value": "${inputs.question}"
+        }
+      },
+      "source": "chat.jinja2",
+      "is_builtin": false,
+      "enable_kwargs": false,
+      "tool_state": "stable",
+      "toolId": "chat.jinja2"
+    },
+    "sql_querry.jinja2": {
+      "name": "sql_querry.jinja2",
+      "type": "prompt",
+      "inputs": {
+        "regenerated_input": {
+          "type": [
+            "string"
+          ],
+          "allow_manual_entry": false,
+          "is_multi_select": false,
+          "input_type": "default",
+          "value": "${user_question_processing.output}",
+          "id": "pdc19ak3"
+        }
+      },
+      "source": "sql_querry.jinja2",
+      "is_builtin": false,
+      "enable_kwargs": false,
+      "tool_state": "stable",
+      "toolId": "sql_querry.jinja2"
+    },
+    "sql_query_handling.py": {
+      "name": "sql_query_handling.py",
+      "type": "python",
+      "inputs": {
+        "generated_sql": {
+          "type": [
+            "string"
+          ],
+          "allow_manual_entry": false,
+          "is_multi_select": false,
+          "input_type": "default",
+          "value": "${sql_query_generation.output}",
+          "id": "wuwm2i24"
+        }
+      },
+      "source": "sql_query_handling.py",
+      "function": "initial_querying",
+      "is_builtin": false,
+      "enable_kwargs": false,
+      "tool_state": "stable",
+      "toolId": "sql_query_handling.py"
+    },
+    "answer_postprocessing.jinja2": {
+      "name": "answer_postprocessing.jinja2",
+      "type": "prompt",
+      "inputs": {
+        "selected_sql": {
+          "type": [
+            "string"
+          ],
+          "allow_manual_entry": false,
+          "is_multi_select": false,
+          "input_type": "default",
+          "value": "${sql_query_handling.output}",
+          "id": "4dokl9b3"
+        },
+        "user_request": {
+          "type": [
+            "string"
+          ],
+          "allow_manual_entry": false,
+          "is_multi_select": false,
+          "input_type": "default",
+          "value": "${user_question_processing.output}",
+          "id": "bnxk4wjp"
+        }
+      },
+      "source": "answer_postprocessing.jinja2",
+      "is_builtin": false,
+      "enable_kwargs": false,
+      "tool_state": "stable",
+      "toolId": "answer_postprocessing.jinja2"
+    }
+  }
+}
